@@ -12,4 +12,4 @@ class Episode(Base):
     title = Column(String, index=True)
     air_date = Column(Date)
     episode = Column(String)
-    characters = relationship(AppearedIn, back_populates='episode')
+    characters = relationship(AppearedIn, back_populates="episode")
