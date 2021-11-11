@@ -20,7 +20,6 @@ Base.metadata.create_all(engine)
 
 session = SessionLocal()
 
-
 # Import episodes
 print("Now importing Episodes")
 episodes = {}
@@ -63,14 +62,14 @@ for i, character in enumerate(characters):
         name=character["name"],
         status=character["status"].lower(),
         species=character["species"],
-        type=character["type"],
+        character_type=character["type"],
         gender=character["gender"].lower(),
     )
     session.add(row)
 
     # Add the links between characters and episodes
-    # for episode in character["episode"]:
-    #     link = Appearance(episode_id=episode, character_id=row.id)
-    #     session.add(link)
+    for episode in character["episode"]:
+        link = Appearance(episode_id=episode, character_id=row.id)
+        session.add(link)
 
 session.commit()

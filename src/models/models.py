@@ -1,6 +1,6 @@
 import enum
 from database.database import Base
-from sqlalchemy import Column, Enum, Date, Integer, String, Table, ForeignKey
+from sqlalchemy import Column, Enum, Date, Integer, String, Table, ForeignKey, CheckConstraint
 from sqlalchemy.orm import relationship
 
 # Association Class for the many-to-many relationship between episodes and characters
@@ -46,7 +46,7 @@ class Character(Base):
     name = Column(String(255), index=True)
     status = Column(Enum(StatusEnum))
     species = Column(String, default="")
-    type = Column(String)
+    character_type = Column(String)
     gender = Column(Enum(GenderEnum))
     episode = relationship(Appearance, back_populates="character")
 
@@ -54,7 +54,10 @@ class Character(Base):
 class Comment(Base):
 
     __tablename__ = "comments"
-
+    __table_args__ = (
+            CheckConstraint('NOT(episode_id IS NULL AND character_id IS NULL)'),
+            )
+        
     id = Column(Integer, index=True, primary_key=True)
     content = Column(String)
     episode_id = Column(ForeignKey("episodes.id"), nullable=True)
