@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import Date
-from models.models import Episode, Appearance, Character
 
+from models.models import Episode, Appearance, Character
 
 
 def get_episodes(

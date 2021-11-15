@@ -1,29 +1,33 @@
 from sqlalchemy.orm import Session
-from models.models import Comment
-from schemas.schemas import CommentCreate
 
+from models.models import Comment, User
+from schemas.schemas import CommentCreate, User
 
 def get_comments(db: Session,
-    episode: int = None,
-    character: int = None,
     skip: int = 0,
-    limit: int = 25
+    limit: int = 25,
+    episode_id: int = None,
+    character_id: int = None,
+    user_id: int = None
 ):
     query = db.query(Comment)
-    if episode:
-        query = query.filter(Comment.episode_id == episode)
-    if character:
-        query = query.filter(Comment.character_id == character)
+    if episode_id:
+        query = query.filter(Comment.episode_id == episode_id)
+    if character_id:
+        query = query.filter(Comment.character_id == character_id)
+    if user_id:
+        query = query.filter(Comment.user_id == user_id)
 
     return query.offset(skip).limit(limit).all()
 
 
-def create_comment(db: Session, comment: CommentCreate):
+def create_comment(db: Session, comment: CommentCreate, current_user: User):
 
     db_comment = Comment(
         content=comment.content,
         episode_id=comment.episode_id,
         character_id=comment.character_id,
+        user_id=current_user.id
     )
     db.add(db_comment)
     db.commit()
@@ -47,9 +51,7 @@ def update_comment(db: Session, comment_id: int, comment: CommentCreate):
 
 
 def delete_comment(db: Session, comment_id: int):
-    """
-    Delete a comment from the database with its id.
-    """
+
     deletion = db.query(Comment).filter(Comment.id == comment_id).delete()
     db.commit()
     if not deletion:

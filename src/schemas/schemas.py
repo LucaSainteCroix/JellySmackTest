@@ -1,7 +1,8 @@
 from datetime import date
-from pydantic import BaseModel
-from models.models import GenderEnum, StatusEnum
+from pydantic import BaseModel, EmailStr
 from typing import Optional, List
+
+from models.models import GenderEnum, StatusEnum
 
 # Episodes
 class Episode(BaseModel):
@@ -33,6 +34,7 @@ class CommentBase(BaseModel):
     episode_id: Optional[int]
     character_id: Optional[int]
     content: str
+    user_id: int
 
 class Comment(CommentBase):
     id: int
@@ -47,4 +49,34 @@ class CommentCreate(CommentBase):
     pass
 
 
+# Token
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
+
+
+# Users
+class User(BaseModel):
+    id: int
+    username: str
+    email: EmailStr
+    disabled: Optional[bool] = False
+
+    class Config:
+        orm_mode = True
+
+class UserCreate(User):
+    password: str
+
+class UserUpdateSelf(BaseModel):
+    username: Optional[str]
+    email: Optional[EmailStr]
+    disabled: Optional[bool] = False
+    password: Optional[str]
+
+class UserUpdate(UserUpdateSelf):
+    id: int

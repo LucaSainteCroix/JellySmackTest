@@ -1,10 +1,8 @@
-from datetime import date
-from datetime import datetime
-from sqlalchemy import Column,Sequence, Integer, String, MetaData
-from database.database import Base, SessionLocal, engine
+from datetime import date, datetime
 import json
 from sqlalchemy.exc import OperationalError
 
+from database.database import Base, SessionLocal, engine
 from models.models import Episode, Character, Appearance
 
 # if tables already existed, delete them
