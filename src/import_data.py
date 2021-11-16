@@ -1,18 +1,33 @@
-from datetime import date, datetime
+from datetime import datetime
 import json
 from sqlalchemy.exc import OperationalError
+import argparse
 
 from database.database import Base, SessionLocal, engine
-from models.models import Episode, Character, Appearance
+from models.models import Episode, Character, Appearance, Comment, User
+from tests.test_main import get_season_ep_number
 
-# if tables already existed, delete them
-try:
-    Episode.__table__.drop(engine)
-    Character.__table__.drop(engine)
-    Appearance.__table__.drop(engine)
-except OperationalError:
-    pass
 
+parser = argparse.ArgumentParser(description="Initialize database and add Episodes & Characters data")
+parser.add_argument("-d", "--drop", action="store_true", help="Drop Comment and User tables")
+parser.add_argument("-k", "--keep", action="store_true",
+                    help="Keep Episode, Character and Appearance tables (deleted by default)")
+args = parser.parse_args()
+
+if not args.keep:
+    try:
+        Episode.__table__.drop(engine)
+        Character.__table__.drop(engine)
+        Appearance.__table__.drop(engine)
+    except OperationalError:
+        pass
+
+if args.drop:
+    try:
+        Comment.__table__.drop(engine)
+        User.__table__.drop(engine)
+    except OperationalError:
+        pass
 
 Base.metadata.create_all(engine)
 
@@ -24,26 +39,22 @@ episodes = {}
 with open("data/rick_morty-episodes_v1.json") as f:
     episodes = json.load(f)
 
+
 for i, episode_ in enumerate(episodes):
     try:
-        date = datetime.strptime(episode_["air_date"], "%B %d, %Y")
-        split_episode = episode_["episode"].split("E")
-        season_string = split_episode[0]
-        episode_string = split_episode[-1]
-        # method to only keep digits form the string
-        season_int = int(''.join(c for c in season_string if c.isdigit()))
-        episode_int = int(''.join(c for c in episode_string if c.isdigit()))
-
-        row = Episode(
-            id=episode_["id"],
-            title=episode_["name"],
-            air_date=date,
-            episode_number=episode_int,
-            season_number=season_int
-        )
-        session.add(row)
-    except Exception as e:
-        print(e)
+        air_date = datetime.strptime(episode_["air_date"], "%B %d, %Y")
+        season_int, episode_int = get_season_ep_number(episode_["episode"])
+        id_check_query = session.query(Episode).filter(Episode.id == episode_["id"]).count()
+        if id_check_query == 0:
+            row = Episode(
+                id=episode_["id"],
+                title=episode_["name"],
+                air_date=air_date,
+                episode_number=episode_int,
+                season_number=season_int
+            )
+            session.add(row)
+    except OperationalError:
         pass
 session.commit()
 
@@ -55,19 +66,21 @@ with open("data/rick_morty-characters_v1.json") as f:
     characters = json.load(f)
 
 for i, character in enumerate(characters):
-    row = Character(
-        id=character["id"],
-        name=character["name"],
-        status=character["status"].lower(),
-        species=character["species"],
-        character_type=character["type"],
-        gender=character["gender"].lower(),
-    )
-    session.add(row)
+    id_check_query = session.query(Character).filter(Character.id == character["id"]).count()
+    if id_check_query == 0:
+        row = Character(
+            id=character["id"],
+            name=character["name"],
+            status=character["status"].lower(),
+            species=character["species"],
+            character_type=character["type"],
+            gender=character["gender"].lower(),
+        )
+        session.add(row)
 
-    # Add the links between characters and episodes
-    for episode in character["episode"]:
-        link = Appearance(episode_id=episode, character_id=row.id)
-        session.add(link)
+        # Add characters appearances in episodes
+        for episode in character["episode"]:
+            appearance = Appearance(episode_id=episode, character_id=row.id)
+            session.add(appearance)
 
 session.commit()
