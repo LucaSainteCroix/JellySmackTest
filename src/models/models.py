@@ -4,9 +4,10 @@ from sqlalchemy import Column, Enum, Date, Integer, String, ForeignKey, CheckCon
 from sqlalchemy.orm import relationship
 
 from database.database import Base
-# Association Class for the many-to-many relationship between episodes and characters
-class Appearance(Base):
 
+
+class Appearance(Base):
+    '''Association Class for the many-to-many relationship between episodes and characters'''
     __tablename__ = "appearances"
 
     episode_id = Column(ForeignKey("episodes.id"), primary_key=True)
@@ -22,8 +23,8 @@ class Episode(Base):
     id = Column(Integer, index=True, primary_key=True)
     title = Column(String, index=True)
     air_date = Column(Date)
-    episode_number = Column(Integer)
-    season_number = Column(Integer)
+    episode_number = Column(Integer, default=0)
+    season_number = Column(Integer, default=0)
 
     character = relationship(Appearance, back_populates="episode")
 
@@ -33,12 +34,14 @@ class StatusEnum(str, enum.Enum):
     dead = "dead"
     unknown = "unknown"
 
+
 class GenderEnum(str, enum.Enum):
     male = "male"
     female = "female"
     genderless = "genderless"
     unknown = "unknown"
-    
+
+
 class Character(Base):
 
     __tablename__ = "characters"

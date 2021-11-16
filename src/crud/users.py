@@ -59,23 +59,49 @@ def create_user(db: Session, user: UserCreate):
     db.commit()
     db.refresh(db_user)
 
+    return db_user
+
 
 def update_user(db: Session, user_to_update: UserUpdate, user_id: int):
+    query = db.query(User).filter(User.id == user_id)
+    user_info = query.first()
 
-    update = (
-        db.query(User)
-        .filter(User.id == user_id)
-        .update({
-            User.username: user_to_update.username,
-            User.email: user_to_update.email,
-            User.disabled: user_to_update.disabled,
-            User.hashed_password: get_password_hash(user_to_update.password)})
-    )
+    if not query:
+        raise HTTPException(
+            status_code=400,
+            detail="Could not update this account, account not found",
+        )
+
+    # verify the "to be updated" fields exist and are not the same as they are already in the database
+    if user_to_update.username and user_info.username != user_to_update.username:
+        # verify the username doesn't already exist
+        username_query = db.query(User).filter(User.username == user_to_update.username).first()
+        if username_query  :
+            raise HTTPException(
+                status_code=400,
+                detail="An user with this username already exists in the system",
+            )
+        update = query.update({User.username: user_to_update.username})
+    
+    if user_to_update.email and user_info.email != user_to_update.email:
+        # verify the email doesn't already exist
+        email_query = db.query(User).filter(User.email == user_to_update.email).first()
+        if email_query:
+            raise HTTPException(
+                status_code=400,
+                detail="An user with this email address already exists in the system",
+            )
+        update = query.update({User.email: user_to_update.email})
+
+    if user_to_update.disabled:
+        update = query.update({User.disabled: user_to_update.disabled})
+
+    if user_to_update.password:
+        update = query.update({User.hashed_password: get_password_hash(user_to_update.password)})
+
     db.commit()
-    if not update:
-        return None
-
     return db.query(User).filter(User.id == user_id).first()
+
 
 def delete_user(db: Session, user_id: int):
 

@@ -4,6 +4,7 @@ from typing import Optional, List
 
 from models.models import GenderEnum, StatusEnum
 
+
 # Episodes
 class Episode(BaseModel):
     id: int
@@ -22,7 +23,7 @@ class Character(BaseModel):
     name: str
     status: StatusEnum
     species: str
-    type: Optional[str] = ""
+    character_type: Optional[str] = ""
     gender: GenderEnum
 
     class Config:
@@ -36,14 +37,17 @@ class CommentBase(BaseModel):
     content: str
     user_id: int
 
+
 class Comment(CommentBase):
     id: int
 
     class Config:
         orm_mode = True
 
+
 class CommentUpdate(BaseModel):
     content: str
+
 
 class CommentCreate(CommentBase):
     pass

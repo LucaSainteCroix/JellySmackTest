@@ -2,13 +2,15 @@ from datetime import datetime, timedelta
 from typing import Dict, Optional
 from sqlalchemy.orm import Session
 from decouple import config
-from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
+from passlib.context import CryptContext
+
 from schemas.schemas import User, TokenData
 from crud.users import get_single_user
 from database.database import get_db
-from passlib.context import CryptContext
+
 
 
 SECRET_KEY = config("secret")
@@ -16,8 +18,6 @@ ALGORITHM = config("algorithm")
 ACCESS_TOKEN_EXPIRE_MINUTES = config("access_token_expires_minutes")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/token")
 
