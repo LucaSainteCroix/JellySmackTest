@@ -1,0 +1,9 @@
+fastapi==0.70.0
+jose==1.0.0
+passlib==1.7.4
+pydantic==1.8.2
+pytest==6.2.5
+python-decouple==3.5
+python_jose==3.3.0
+SQLAlchemy==1.4.26
+uvicorn==0.15.0
