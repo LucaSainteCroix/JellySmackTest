@@ -77,3 +77,22 @@ Available routes are as follow:
 | [POST] | /api/v1/token | Authenticate with username and password and get a JWT token |
 | [GET] | / | Home |
 
+
+# Notes
+### Time taken
+This project took me about 12 hours (very rough estimate). 
+
+### Thoughts
+The part that took me the longest was by far the users and authentication. I chose to go with JWT and OAuth2 because it seemed like the most solid Authentication/Authorization method for FastAPI. In retrospect, that was probably not the right choice for this particular exercise. I realized only too late that I had to implement logging out as wel. And logging out is not a thing with JWT tokens. I could have implemented a token black list stored on Redis, and make a middleware used by every method that needs authentication, to verify that the token is still valid. But for simplicity, that would have involved changing the jwt implementation I chose (python-jose), and a few other things. I decided I was already too far into it.
+
+### Features done and choices made
+For the mandatory parts I did everything asked and a little more. I added more complex filters, like the possibility to search characters by episodes they appeared in, and vice versa. Also there is the possibility to search episodes by season number or air date. I decided to make the creation of comments dependant on authentication, even though other methods like update and delete are not. I obviously would not have done that in a real-world situation but it seemed intuitive to tie comment creation to authentication. I also decided to implement routes tied to the authenticated user, like see your own comments, modify your account (update own user), and delete your account.
+
+The project's coverage is 93%
+
+### Possible improvements
+If this was an already existing production environment, I would have used Alambic for migrations. As said before, I could have chosen another authentication method for logging out more easily. The next step would have been to add roles and permissions (part of the backlog). The CSV export function is not fully optimized, I would surely use other methods for a very large number of comments. I also could have commented more thoroughly but I feel like the functions I did not comment are pretty self-explanatory.
+
+### Conclusion
+It was really interesting to try FastAPI and to work with SQLAlchemy again. I think this test is well made. It's not overly complex for no reason, it's not too long if you don't want to and it's still complete enough to gauge someone's proficiency in buiding APIs and backends in Python. I feel confortable with my level, and even though I could have done more, I feel like I did a good job for the time I took.
+
