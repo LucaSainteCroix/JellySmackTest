@@ -1,8 +1,14 @@
-setup: requirements.txt
-    pip install -r requirements.txt
+setup:
+	pip install -r requirements.txt
 
 import_data:
-	python3 -m src.import_data
+	cd src && python3 -m import_data
+
+import_data_keep_tables:
+	cd src && python3 -m import_data --keep
+
+import_data_drop_tables:
+	cd src && python3 -m import_data --drop
 
 lint:
 	flake8 src
@@ -10,7 +16,7 @@ lint:
 test:
 	pytest -v
 
-coverage: .coveragerc 
+coverage:
 	pytest --cov=src src/tests/ --cov-config=.coveragerc 
 
 run:
