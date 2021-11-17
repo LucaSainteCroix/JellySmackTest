@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException
+from http import HTTPStatus
 from typing import List
 from sqlalchemy.orm import Session
 from datetime import date, timedelta
@@ -7,7 +8,7 @@ from decouple import config
 from fastapi.security import OAuth2PasswordRequestForm
 import csv
 import io
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 
 from auth.auth_handler import authenticate_user, create_access_token, get_current_active_user
 from database.database import Base, engine, get_db
@@ -117,6 +118,7 @@ async def delete_comment(id: int, db: Session = Depends(get_db)):
             status_code=404,
             detail="Could not find a comment to delete",
         )
+    return Response(status_code=HTTPStatus.NO_CONTENT.value)
 
 
 @app.get("/api/v1/comments/export_csv")
@@ -125,6 +127,11 @@ async def export_comments(db: Session = Depends(get_db)):
     '''Export all comments as csv file'''
 
     all_comments = db.query(Comment).all()
+    if len(all_comments) == 0:
+        raise HTTPException(
+            status_code=404,
+            detail="No Comments to export",
+        )
     all_comments_dicts = []
     # convert row objects to dicts and remove instance state element
     for c in all_comments:
@@ -212,7 +219,7 @@ async def delete_user_self(
             status_code=404,
             detail="Could not delete your account",
         )
-
+    return Response(status_code=HTTPStatus.NO_CONTENT.value)
 
 @app.put("/api/v1/users", response_model=schemas.User)
 async def update_user(
@@ -233,7 +240,7 @@ async def delete_user(
             status_code=404,
             detail="Could not delete this account",
         )
-
+    return Response(status_code=HTTPStatus.NO_CONTENT.value)
 
 
 # Home -------------------------------------------------------------
