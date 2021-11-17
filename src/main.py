@@ -23,7 +23,19 @@ ACCESS_TOKEN_EXPIRE_MINUTES = config("ACCESS_TOKEN_EXPIRE_MINUTES", default = 30
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+description = """
+    This is the technical test I made for Jellysmack
+    To authenticate, first create a user with a post request to the /api
+    Then use the Authorize button available in the top right and enter your credentials.
+"""
+app = FastAPI(
+    title="Jellysmack Python Test",
+    version="0.0.1",
+    description=description,
+    contact={
+        "name": "Luca Sainte-Croix"
+    }
+)
 
 
 # Episodes ------------------------------------------------------------
@@ -79,8 +91,13 @@ async def read_comments(db: Session = Depends(get_db),
 
 
 @app.get("/api/v1/users/me/comments", response_model=List[schemas.Comment])
-async def read_own_comments(db: Session = Depends(get_db),current_user: schemas.User = Depends(get_current_active_user)):
-    return comments.get_comments(db, user_id = current_user.id)
+async def read_own_comments(
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_active_user),
+    skip: int = 0,
+    limit : int = 25
+):
+    return comments.get_comments(db, skip, limit, user_id = current_user.id)
 
 
 @app.post("/api/v1/comments", response_model=schemas.Comment, status_code=201)
@@ -89,6 +106,10 @@ async def create_comments(
     db: Session = Depends(get_db),
     current_user: schemas.User = Depends(get_current_active_user)
 ):
+    '''
+        To create a comment you have to be authenticated.
+        You also have to specify at least one of "episode_id" or "character_id"
+    '''
     if not comment.episode_id and not comment.character_id:
         raise HTTPException(
             status_code=400,
@@ -102,6 +123,9 @@ async def create_comments(
 async def update_comment(
     id: int, comment: schemas.CommentUpdate, db: Session = Depends(get_db)
 ):
+    '''
+        Update a comment's content
+    '''
     updated_comment = comments.update_comment(db, id, comment)
     if not updated_comment:
         raise HTTPException(
@@ -119,7 +143,6 @@ async def delete_comment(id: int, db: Session = Depends(get_db)):
             detail="Could not find a comment to delete",
         )
     return Response(status_code=HTTPStatus.NO_CONTENT.value)
-
 
 @app.get("/api/v1/comments/export_csv")
 async def export_comments(db: Session = Depends(get_db)):
