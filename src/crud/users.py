@@ -64,14 +64,14 @@ def create_user(db: Session, user: UserCreate):
 
 def update_user(db: Session, user_to_update: UserUpdate, user_id: int):
     query = db.query(User).filter(User.id == user_id)
-    user_info = query.first()
+    query_count = query.count()
 
-    if not query:
+    if query_count == 0:
         raise HTTPException(
-            status_code=400,
+            status_code=404,
             detail="Could not update this account, account not found",
         )
-
+    user_info = query.first()
     # verify the "to be updated" fields exist and are not the same as they are already in the database
     if user_to_update.username and user_info.username != user_to_update.username:
         # verify the username doesn't already exist
